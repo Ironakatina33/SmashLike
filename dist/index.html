@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Platform Brawler Prototype</title>
+    <script type="module" crossorigin src="/assets/index-D5eMN49S.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CvC8LOb-.css">
+  </head>
+  <body>
+    <main id="app">
+      <section class="panel" id="menu">
+        <div class="hero">
+          <p class="eyebrow">Prototype combat plateforme</p>
+          <h1>Rift Clash</h1>
+          <p class="subtitle">Un brawler local rapide à prendre en main, pensé pour ajouter facilement de nouveaux combattants.</p>
+        </div>
+
+        <div class="setup-grid">
+          <article class="card">
+            <h2>Joueur 1</h2>
+            <div class="select-row">
+              <button class="select-button" data-player="0" data-dir="-1">‹</button>
+              <div class="fighter-card" id="fighter-one"></div>
+              <button class="select-button" data-player="0" data-dir="1">›</button>
+            </div>
+            <p class="controls">Déplacement: A/D · Saut/Haut: W · Bas: S · Attaque: F · Spécial: G · Bouclier: H</p>
+          </article>
+
+          <article class="card">
+            <h2>Joueur 2</h2>
+            <div class="select-row">
+              <button class="select-button" data-player="1" data-dir="-1">‹</button>
+              <div class="fighter-card" id="fighter-two"></div>
+              <button class="select-button" data-player="1" data-dir="1">›</button>
+            </div>
+            <p class="controls">Déplacement: ←/→ · Saut/Haut: ↑ · Bas: ↓ · Attaque: Numpad 1 · Spécial: Numpad 2 · Bouclier: Numpad 3</p>
+          </article>
+        </div>
+
+        <div class="actions">
+          <button id="start-game" class="primary">Lancer le match</button>
+          <p>Objectif: éjecter l'adversaire hors de l'arène. Attaque + Haut/Bas déclenche un coup différent.</p>
+        </div>
+      </section>
+
+      <section class="game-shell hidden" id="game-shell">
+        <canvas id="game" width="1280" height="720"></canvas>
+        <div class="hud" id="hud"></div>
+        <button id="back-menu" class="ghost">Menu</button>
+      </section>
+    </main>
+
+  </body>
+</html>
