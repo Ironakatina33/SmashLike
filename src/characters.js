@@ -3,6 +3,8 @@ export const fighters = [
     id: 'nova',
     name: 'Nova',
     tagline: 'Polyvalente, rapide, parfaite pour débuter.',
+    role: 'All-rounder',
+    modelUrl: '/models/nova.glb',
     color: '#72f7ff',
     accent: '#3278ff',
     stats: {
@@ -74,6 +76,8 @@ export const fighters = [
     id: 'bront',
     name: 'Bront',
     tagline: 'Lourd, puissant, survit longtemps.',
+    role: 'Heavy bruiser',
+    modelUrl: '/models/bront.glb',
     color: '#ffb45f',
     accent: '#ff5d2e',
     stats: {
@@ -145,6 +149,8 @@ export const fighters = [
     id: 'mistral',
     name: 'Mistral',
     tagline: 'Très mobile, faible poids, gros jeu aérien.',
+    role: 'Air combo',
+    modelUrl: '/models/mistral.glb',
     color: '#c79cff',
     accent: '#7d4cff',
     stats: {

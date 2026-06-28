@@ -8,33 +8,62 @@
   </head>
   <body>
     <main id="app">
-      <section class="panel" id="menu">
-        <div class="hero">
-          <p class="eyebrow">Prototype combat plateforme</p>
+      <section class="screen main-menu" id="main-menu">
+        <div class="title-stack">
+          <p class="eyebrow">Platform fighter 3D-ready</p>
           <h1>Rift Clash</h1>
-          <p class="subtitle">Un brawler local rapide à prendre en main, pensé pour ajouter facilement de nouveaux combattants.</p>
+          <p class="subtitle">Un prototype local façon arena brawler, prêt à accueillir tes modèles 3D, des menus plus cinématiques et un combat nerveux.</p>
         </div>
 
-        <div class="setup-grid">
-          <article class="card">
-            <h2>Joueur 1</h2>
+        <div class="main-actions">
+          <button id="open-select" class="primary huge">Combat local</button>
+          <button id="toggle-music" class="secondary">Musique épique: off</button>
+          <button id="show-model-guide" class="secondary">Ajouter des modèles 3D</button>
+        </div>
+
+        <aside class="model-guide hidden" id="model-guide">
+          <h2>Importer un combattant 3D</h2>
+          <p>Dépose un fichier GLB dans <strong>public/models</strong>, puis renseigne <strong>modelUrl</strong> dans <strong>src/characters.js</strong>. Si le fichier manque, un avatar 3D stylisé est généré automatiquement.</p>
+        </aside>
+      </section>
+
+      <section class="screen select-menu hidden" id="select-menu">
+        <header class="select-header">
+          <div>
+            <p class="eyebrow">Choisis ton roster</p>
+            <h2>Selection des combattants</h2>
+          </div>
+          <button id="back-main" class="ghost inline">Accueil</button>
+        </header>
+
+        <div class="setup-grid ultimate-grid">
+          <article class="card fighter-panel">
+            <h3>Joueur 1</h3>
+            <div class="model-preview" id="preview-one"></div>
             <div class="select-row">
               <button class="select-button" data-player="0" data-dir="-1">‹</button>
               <div class="fighter-card" id="fighter-one"></div>
               <button class="select-button" data-player="0" data-dir="1">›</button>
             </div>
-            <p class="controls">Déplacement: A/D · Saut/Haut: W · Bas: S · Attaque: F · Spécial: G · Bouclier: H</p>
+            <p class="controls">A/D · W saut/haut · S bas · F attaque · G spécial · H bouclier</p>
           </article>
 
-          <article class="card">
-            <h2>Joueur 2</h2>
+          <article class="card fighter-panel">
+            <h3>Joueur 2</h3>
+            <div class="model-preview" id="preview-two"></div>
             <div class="select-row">
               <button class="select-button" data-player="1" data-dir="-1">‹</button>
               <div class="fighter-card" id="fighter-two"></div>
               <button class="select-button" data-player="1" data-dir="1">›</button>
             </div>
-            <p class="controls">Déplacement: ←/→ · Saut/Haut: ↑ · Bas: ↓ · Attaque: Numpad 1 · Spécial: Numpad 2 · Bouclier: Numpad 3</p>
+            <p class="controls">←/→ · ↑ saut/haut · ↓ bas · Numpad 1 attaque · Numpad 2 spécial · Numpad 3 bouclier</p>
           </article>
+        </div>
+
+        <div class="versus-bar">
+          <span id="versus-one">Nova</span>
+          <strong>VS</strong>
+          <span id="versus-two">Bront</span>
         </div>
 
         <div class="actions">
@@ -44,6 +73,7 @@
       </section>
 
       <section class="game-shell hidden" id="game-shell">
+        <div id="arena-3d" class="arena-3d"></div>
         <canvas id="game" width="1280" height="720"></canvas>
         <div class="hud" id="hud"></div>
         <button id="back-menu" class="ghost">Menu</button>

@@ -1,13 +1,23 @@
 import { fighters } from './characters.js';
+import { renderAllPreviews, renderArena3D, setArenaFighters, setupArena3D, setupFighterPreview, updateFighterPreview } from './scene3d.js';
 
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d');
-const menu = document.querySelector('#menu');
+const mainMenu = document.querySelector('#main-menu');
+const selectMenu = document.querySelector('#select-menu');
 const gameShell = document.querySelector('#game-shell');
 const hud = document.querySelector('#hud');
+const arena3d = document.querySelector('#arena-3d');
+const openSelectButton = document.querySelector('#open-select');
 const startButton = document.querySelector('#start-game');
 const backButton = document.querySelector('#back-menu');
+const backMainButton = document.querySelector('#back-main');
+const toggleMusicButton = document.querySelector('#toggle-music');
+const modelGuideButton = document.querySelector('#show-model-guide');
+const modelGuide = document.querySelector('#model-guide');
 const fighterCards = [document.querySelector('#fighter-one'), document.querySelector('#fighter-two')];
+const fighterPreviews = [document.querySelector('#preview-one'), document.querySelector('#preview-two')];
+const versusNames = [document.querySelector('#versus-one'), document.querySelector('#versus-two')];
 
 const keys = new Set();
 const pressed = new Set();
@@ -17,6 +27,11 @@ let running = false;
 let lastTime = 0;
 let winnerText = '';
 let winnerTimer = 0;
+let arenaReady = false;
+let audioContext = null;
+let musicGain = null;
+let musicTimer = null;
+let musicEnabled = false;
 
 const stage = {
   width: 1280,
@@ -415,6 +430,7 @@ function renderSelectionCards() {
     card.style.setProperty('--fighter-color', fighter.color);
     card.style.setProperty('--fighter-accent', fighter.accent);
     card.innerHTML = `
+      <p class="fighter-role">${fighter.role}</p>
       <p class="fighter-name">${fighter.name}</p>
       <p class="fighter-tagline">${fighter.tagline}</p>
       <div class="stat-grid">
@@ -423,12 +439,21 @@ function renderSelectionCards() {
         ${statLine('Poids', fighter.stats.weight / 1.35)}
         ${statLine('Puissance', fighter.moves.special.damage / 18)}
       </div>
+      <p class="model-path">${fighter.modelUrl}</p>
     `;
+    versusNames[playerIndex].textContent = fighter.name;
+    updateFighterPreview(fighterPreviews[playerIndex], fighter);
   });
 }
 
 function statLine(label, value) {
   return `<div class="stat"><span>${label}</span><span style="width:${Math.round(clamp(value, 0.12, 1) * 100)}%"></span></div>`;
+}
+
+function showScreen(screen) {
+  mainMenu.classList.toggle('hidden', screen !== mainMenu);
+  selectMenu.classList.toggle('hidden', screen !== selectMenu);
+  gameShell.classList.toggle('hidden', screen !== gameShell);
 }
 
 function startGame() {
@@ -437,8 +462,12 @@ function startGame() {
   players.push(new Player(1, fighters[selections[1]], 850, -1));
   winnerText = '';
   winnerTimer = 0;
-  menu.classList.add('hidden');
-  gameShell.classList.remove('hidden');
+  showScreen(gameShell);
+  if (!arenaReady) {
+    setupArena3D(arena3d);
+    arenaReady = true;
+  }
+  setArenaFighters(players);
   running = true;
   lastTime = performance.now();
   requestAnimationFrame(loop);
@@ -446,8 +475,7 @@ function startGame() {
 
 function stopGame() {
   running = false;
-  gameShell.classList.add('hidden');
-  menu.classList.remove('hidden');
+  showScreen(selectMenu);
 }
 
 function loop(time) {
@@ -457,6 +485,7 @@ function loop(time) {
   const steps = delta > 20 ? 2 : 1;
 
   for (let i = 0; i < steps; i += 1) update();
+  renderArena3D(players);
   draw();
   pressed.clear();
   requestAnimationFrame(loop);
@@ -493,9 +522,9 @@ function draw() {
 
 function drawBackground() {
   const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-  gradient.addColorStop(0, '#111936');
-  gradient.addColorStop(0.55, '#081023');
-  gradient.addColorStop(1, '#16091f');
+  gradient.addColorStop(0, 'rgba(17, 25, 54, 0.52)');
+  gradient.addColorStop(0.55, 'rgba(8, 16, 35, 0.36)');
+  gradient.addColorStop(1, 'rgba(22, 9, 31, 0.46)');
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -600,9 +629,63 @@ window.addEventListener('keyup', (event) => {
   keys.delete(event.code);
 });
 
+function playTone(time, frequency, duration, type, gainValue) {
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, time);
+  gain.gain.setValueAtTime(0.0001, time);
+  gain.gain.exponentialRampToValueAtTime(gainValue, time + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+  oscillator.connect(gain).connect(musicGain);
+  oscillator.start(time);
+  oscillator.stop(time + duration + 0.04);
+}
+
+function scheduleEpicLoop() {
+  if (!musicEnabled || !audioContext) return;
+  const start = audioContext.currentTime + 0.05;
+  const bass = [55, 55, 65.41, 73.42, 82.41, 73.42, 65.41, 49];
+  const lead = [220, 246.94, 261.63, 329.63, 293.66, 261.63, 246.94, 329.63];
+  bass.forEach((frequency, index) => playTone(start + index * 0.32, frequency, 0.28, 'sawtooth', 0.08));
+  lead.forEach((frequency, index) => playTone(start + 1.28 + index * 0.16, frequency, 0.14, 'triangle', 0.035));
+  musicTimer = window.setTimeout(scheduleEpicLoop, 2560);
+}
+
+function toggleMusic() {
+  if (!audioContext) {
+    audioContext = new AudioContext();
+    musicGain = audioContext.createGain();
+    musicGain.gain.value = 0.42;
+    musicGain.connect(audioContext.destination);
+  }
+  musicEnabled = !musicEnabled;
+  toggleMusicButton.textContent = `Musique épique: ${musicEnabled ? 'on' : 'off'}`;
+  if (musicEnabled) {
+    audioContext.resume();
+    scheduleEpicLoop();
+  } else if (musicTimer) {
+    window.clearTimeout(musicTimer);
+    musicTimer = null;
+  }
+}
+
+function menuAnimationLoop() {
+  renderAllPreviews();
+  if (running) renderArena3D(players);
+  requestAnimationFrame(menuAnimationLoop);
+}
+
+openSelectButton.addEventListener('click', () => showScreen(selectMenu));
+backMainButton.addEventListener('click', () => showScreen(mainMenu));
+modelGuideButton.addEventListener('click', () => modelGuide.classList.toggle('hidden'));
+toggleMusicButton.addEventListener('click', toggleMusic);
 startButton.addEventListener('click', startGame);
 backButton.addEventListener('click', stopGame);
 window.addEventListener('resize', resizeCanvas);
 
 resizeCanvas();
+fighterPreviews.forEach((preview, index) => setupFighterPreview(preview, fighters[selections[index]]));
 renderSelectionCards();
+showScreen(mainMenu);
+requestAnimationFrame(menuAnimationLoop);
